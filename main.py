@@ -44,13 +44,15 @@ class ParticleSim():
   def __init__(self):
     self.particles = []
     self.gravity = np.array([0., 0., 0.])
-    self.cor = 1
+    self.cor  = 1
     self.time = 0
+    self.dims = [10, 10, 10]
 
   def add_particles(self, particles):
     assert type(particles) == list, "Appended particle(s) must be in a list"
 
     self.particles.extend(particles)
+    self._collide_particles_pairwise()
 
   def set_gravity(self, gravity):
     self.gravity = gravity
@@ -58,6 +60,10 @@ class ParticleSim():
   def set_cor(self, cor):
     self.cor = cor
 
+  def set_boundaries(self, width, height, depth):
+    self.dims = [width, height, depth]
+
+  
   def update_state(self, dt=1e-3):
     for P in self.particles:
       P.change_position(P.velocity * dt + self.gravity/2 * dt**2)
@@ -69,7 +75,7 @@ class ParticleSim():
 
   def _collide_particles_pairwise(self):
     '''
-    Check which pair of particles are colliding, and apply collision when approrpriate
+    Check which pair of particles are colliding, and apply collision when appropriate
     '''
 
     for i in range(len(self.particles)):
@@ -97,12 +103,10 @@ class ParticleSim():
     total_mass = particle1.mass + particle2.mass
     sum_radii  = particle1.radius + particle2.radius
     centre_of_mass = (particle1.mass * particle1.position + particle2.mass * particle2.position)/total_mass
-    particle1.set_position(centre_of_mass - sum_radii * particle2.mass/total_mass)
-    particle2.set_position(centre_of_mass + sum_radii * particle1.mass/total_mass)
+    particle1.set_position(centre_of_mass - collision_normal * sum_radii * particle2.mass/total_mass)
+    particle2.set_position(centre_of_mass + collision_normal * sum_radii * particle1.mass/total_mass)
   
-  def _boundary_conditions(self, width = 10, height = 10, depth = 10):
-
-    dims = [width, height, depth]
+  def _boundary_conditions(self):
 
     for P in self.particles:
       # Along each axis
@@ -114,6 +118,6 @@ class ParticleSim():
           P.velocity[i] *= -1
 
         # Bounce off wall at x,y,z = width,height,depth
-        elif P.position[i] - P.radius > dims[i]:
-          P.position = dims[i] - P.radius
+        elif P.position[i] + P.radius > self.dims[i]:
+          P.position[i] = self.dims[i] - P.radius
           P.velocity[i] *= -1
