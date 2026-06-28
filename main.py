@@ -68,8 +68,8 @@ class ParticleSim():
     for P in self.particles:
       P.change_position(P.velocity * dt + self.gravity/2 * dt**2)
       P.change_velocity(self.gravity * dt)
-    self._collide_particles_pairwise()
     self._boundary_conditions()
+    self._collide_particles_pairwise()
 
     self.time += dt
 
@@ -115,12 +115,12 @@ class ParticleSim():
         # Bounce off wall at x,y,z = 0
         if P.position[i] - P.radius < 0:
           P.position[i] = P.radius
-          P.velocity[i] *= -1
+          P.velocity[i] *= -self.cor
 
         # Bounce off wall at x,y,z = width,height,depth
         elif P.position[i] + P.radius > self.dims[i]:
           P.position[i] = self.dims[i] - P.radius
-          P.velocity[i] *= -1
+          P.velocity[i] *= -self.cor
 
 if __name__ == "__main__":
   import pygame
@@ -137,10 +137,10 @@ if __name__ == "__main__":
   
   # Create simulation
   Simulation = ParticleSim()
-  Simulation.set_boundaries(width=width/10, height=height/10, depth=10)
-  Simulation.add_particles([Particle(position=np.array([np.random.rand()*width/10, np.random.rand()*height/10, 5.]),
-                                     velocity=20*np.array([np.random.rand(), np.random.rand(), 0.]) - 10,
-                                     mass=1.0,
+  Simulation.set_boundaries(width=width/10, height=height/10, depth=1)
+  Simulation.add_particles([Particle(position=np.array([np.random.rand()*width/10, np.random.rand()*height/10, .5]),
+                                     velocity=np.array([20*np.random.rand()-10, 20*np.random.rand()-10, 0.]),
+                                     mass=1 + 2*np.random.rand(),
                                      radius=1) for _ in range(100)])
   
   running = True
