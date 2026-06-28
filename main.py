@@ -121,3 +121,49 @@ class ParticleSim():
         elif P.position[i] + P.radius > self.dims[i]:
           P.position[i] = self.dims[i] - P.radius
           P.velocity[i] *= -1
+
+if __name__ == "__main__":
+  import pygame
+
+  # Initialize pygame
+  pygame.init()
+  
+  # Simulation parameters
+  width, height = 800, 600
+  FPS = 60
+  screen = pygame.display.set_mode((width, height))
+  pygame.display.set_caption("Particle Simulation")
+  clock = pygame.time.Clock()
+  
+  # Create simulation
+  Simulation = ParticleSim()
+  Simulation.set_boundaries(width=width/10, height=height/10, depth=10)
+  Simulation.add_particles([Particle(position=np.array([np.random.rand()*width/10, np.random.rand()*height/10, 5.]),
+                                     velocity=20*np.array([np.random.rand(), np.random.rand(), 0.]) - 10,
+                                     mass=1.0,
+                                     radius=1) for _ in range(100)])
+  
+  running = True
+  while running:
+    # Handle events
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        running = False
+    
+    # Update simulation
+    Simulation.update_state(dt=1/FPS)
+    
+    # Render
+    screen.fill((255, 255, 255))
+    
+    for particle in Simulation.particles:
+      # Draw particle (project 3D position to 2D, using x-y plane)
+      x = int(particle.position[0] * 10)
+      y = int(particle.position[1] * 10)
+      radius = int(particle.radius * 10)
+      pygame.draw.circle(screen, (0, 0, 255), (x, y), max(radius, 3))
+    
+    pygame.display.flip()
+    clock.tick(FPS)
+  
+  pygame.quit()
